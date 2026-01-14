@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+
 import '../../core/sentry/sentry_config.dart';
+import '../../domain/entities/user.dart';
 import 'login_controller.dart';
 
 /// Login screen with proper form validation and error handling.
-/// 
+///
 /// **Sentry integration:**
 /// - Tracks form interactions as breadcrumbs
 /// - Captures validation errors
@@ -96,15 +98,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     final loginState = ref.watch(loginControllerProvider);
 
-    // Navigate to dashboard on successful login
-    ref.listen<AsyncValue>(
-      loginControllerProvider,
-      (previous, next) {
-        if (next.hasValue && next.value != null) {
-          context.go('/dashboard');
-        }
-      },
-    );
+    // Navigate to dashboard on successful login.
+    // Riverpod requires listen calls inside build for ConsumerState.
+    ref.listen<AsyncValue<User?>>(loginControllerProvider, (previous, next) {
+      if (next.hasValue && next.value != null && mounted) {
+        context.go('/dashboard');
+      }
+    });
 
     return Scaffold(
       appBar: AppBar(
@@ -130,18 +130,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 const Text(
                   'FieldOps',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Field Operations Management',
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey[600],
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                 ),
                 const SizedBox(height: 48),
 
@@ -259,7 +256,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            loginState.error.toString().replaceAll('Exception: ', ''),
+                            loginState.error.toString().replaceAll(
+                              'Exception: ',
+                              '',
+                            ),
                             style: TextStyle(color: Colors.red[700]),
                           ),
                         ),
@@ -276,10 +276,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 if (const bool.fromEnvironment('dart.vm.product') == false) ...[
                   const Text(
                     'Debug Actions',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   const SizedBox(height: 12),
                   ElevatedButton.icon(
@@ -317,7 +314,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   const SizedBox(height: 8),
                   ElevatedButton.icon(
                     onPressed: () {
-                      throw Exception('Intentional Crash: Login Screen Exception');
+                      throw Exception(
+                        'Intentional Crash: Login Screen Exception',
+                      );
                     },
                     icon: const Icon(Icons.bug_report),
                     label: const Text('TRIGGER CRASH'),

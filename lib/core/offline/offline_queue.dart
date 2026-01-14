@@ -69,8 +69,10 @@ class OfflineQueue {
   /// - Monitors connection restore events
   static Future<void> init() async {
     try {
-      await Hive.initFlutter();
-      await Hive.openBox(_boxName);
+      // Hive is initialized in LocalStorage.init(); just ensure our box is open.
+      if (!Hive.isBoxOpen(_boxName)) {
+        await Hive.openBox(_boxName);
+      }
 
       // Listen for connection restored events
       _connectionSubscription = onConnectionRestored.listen(
@@ -96,7 +98,7 @@ class OfflineQueue {
         stackTrace: stack,
         hint: Hint.withMap({'operation': 'offline_queue_init'}),
       );
-      rethrow;
+      // If offline queue fails to initialize we still allow the app to start.
     }
   }
 

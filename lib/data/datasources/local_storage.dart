@@ -20,13 +20,23 @@ class LocalStorage {
   static const String _expiryKey = 'token_expiry';
 
   static Box? _box;
+  static bool _hiveInitialized = false;
 
   /// Initialize the storage box.
   /// 
   /// Must be called during app initialization (in main.dart).
   static Future<void> init() async {
     try {
-      _box = await Hive.openBox(_boxName);
+      // Ensure Hive is initialized once before opening any boxes.
+      if (!_hiveInitialized) {
+        await Hive.initFlutter();
+        _hiveInitialized = true;
+      }
+
+      if (_box?.isOpen != true) {
+        _box = await Hive.openBox(_boxName);
+      }
+
       SentryConfig.addBreadcrumb(
         'Local storage initialized',
         category: 'storage',
@@ -37,7 +47,8 @@ class LocalStorage {
         stackTrace: stack,
         hint: Hint.withMap({'operation': 'storage_init'}),
       );
-      rethrow;
+      // If storage fails to initialize we still allow the app to start.
+      // Auth-related calls will simply see null data.
     }
   }
 

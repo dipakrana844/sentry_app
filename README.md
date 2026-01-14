@@ -2,6 +2,13 @@
 
 FieldOps is a production-style Flutter application designed to demonstrate **all major Sentry Flutter capabilities** using only free and open-source tools.
 
+## 📸 Screenshots
+
+![Login Screen](screenshot/login.jpg)
+![Dashboard Screen](screenshot/dashboard.jpg)
+![Form Screen](screenshot/form.jpg)
+![Warning Screen](screenshot/wrarning%20screen.jpg)
+
 ## 🏗 Architecture
 
 - **Clean Architecture**: Separated into Data, Domain, Presentation, and Core layers

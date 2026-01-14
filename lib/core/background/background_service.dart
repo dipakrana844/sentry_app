@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:isolate';
-
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:workmanager/workmanager.dart';
 import '../errors/global_error_handler.dart';
@@ -42,7 +40,7 @@ class BackgroundService {
         stackTrace: stack,
         hint: Hint.withMap({'operation': 'background_service_init'}),
       );
-      rethrow;
+      // If background services fail to initialize we still want the UI to load.
     }
   }
 
