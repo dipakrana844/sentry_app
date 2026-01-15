@@ -127,7 +127,7 @@ class AuthRepositoryImpl implements AuthRepository {
         stackTrace: stackTrace,
         hint: Hint.withMap({'operation': 'get_current_user'}),
       );
-      return Left(CacheFailure('Failed to retrieve user data'));
+      return const Left(CacheFailure('Failed to retrieve user data'));
     }
   }
 
@@ -147,7 +147,7 @@ class AuthRepositoryImpl implements AuthRepository {
         stackTrace: stackTrace,
         hint: Hint.withMap({'operation': 'logout'}),
       );
-      return Left(CacheFailure('Failed to logout'));
+      return const Left(CacheFailure('Failed to logout'));
     }
   }
 }

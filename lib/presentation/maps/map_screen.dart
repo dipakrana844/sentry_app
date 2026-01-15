@@ -8,13 +8,13 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import '../../core/sentry/sentry_config.dart';
 
 /// Map screen with location tracking and route drawing.
-/// 
+///
 /// **Sentry integration:**
 /// - Tracks permission requests and denials
 /// - Monitors location updates
 /// - Captures location errors (null location, permission denied)
 /// - Tracks map controller errors
-/// 
+///
 /// **Real-world problem solved:**
 /// Field workers need to see their location and routes. This screen demonstrates
 /// handling all location-related edge cases that occur in production.
@@ -27,7 +27,8 @@ class MapScreen extends StatefulWidget {
 
 class _MapScreenState extends State<MapScreen> {
   GoogleMapController? _controller;
-  static const LatLng _defaultCenter = LatLng(37.7749, -122.4194); // San Francisco
+  static const LatLng _defaultCenter =
+      LatLng(37.7749, -122.4194); // San Francisco
   LatLng _currentCenter = _defaultCenter;
   final Set<Marker> _markers = {};
   final Set<Polyline> _polylines = {};
@@ -104,7 +105,8 @@ class _MapScreenState extends State<MapScreen> {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Location permission permanently denied. Please enable in settings.'),
+                content: Text(
+                    'Location permission permanently denied. Please enable in settings.'),
                 backgroundColor: Colors.red,
               ),
             );
@@ -173,7 +175,8 @@ class _MapScreenState extends State<MapScreen> {
       );
     } catch (e, stack) {
       // Handle location null scenario
-      if (e.toString().contains('null') || e.toString().contains('unavailable')) {
+      if (e.toString().contains('null') ||
+          e.toString().contains('unavailable')) {
         SentryConfig.captureException(
           Exception('Location is null or unavailable'),
           stackTrace: stack,
@@ -186,7 +189,8 @@ class _MapScreenState extends State<MapScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Location is unavailable. Please check GPS settings.'),
+              content:
+                  Text('Location is unavailable. Please check GPS settings.'),
               backgroundColor: Colors.orange,
             ),
           );
@@ -203,11 +207,13 @@ class _MapScreenState extends State<MapScreen> {
 
   /// Start tracking location updates.
   void _startLocationTracking() {
-    if (_isTrackingLocation) return;
+    if (_isTrackingLocation) {
+      return;
+    }
 
     try {
       _isTrackingLocation = true;
-      final locationSettings = const LocationSettings(
+      const locationSettings = LocationSettings(
         accuracy: LocationAccuracy.high,
         distanceFilter: 10, // Update every 10 meters
       );
@@ -270,7 +276,9 @@ class _MapScreenState extends State<MapScreen> {
 
   /// Update current location marker.
   void _updateCurrentLocationMarker() {
-    if (_currentPosition == null) return;
+    if (_currentPosition == null) {
+      return;
+    }
 
     setState(() {
       _markers.removeWhere((m) => m.markerId.value == 'current_location');
@@ -413,9 +421,7 @@ class _MapScreenState extends State<MapScreen> {
             onPressed: _isTrackingLocation
                 ? _stopLocationTracking
                 : _startLocationTracking,
-            tooltip: _isTrackingLocation
-                ? 'Stop tracking'
-                : 'Start tracking',
+            tooltip: _isTrackingLocation ? 'Stop tracking' : 'Start tracking',
           ),
           IconButton(
             icon: const Icon(Icons.my_location),
@@ -511,5 +517,6 @@ class PermissionException implements Exception {
   PermissionException(this.message, this.permission);
 
   @override
-  String toString() => 'PermissionException: $message (${permission.toString()})';
+  String toString() =>
+      'PermissionException: $message (${permission.toString()})';
 }

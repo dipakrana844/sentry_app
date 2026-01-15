@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -36,7 +35,7 @@ Future<void> bootstrap(
   GlobalErrorHandler.initialize();
 
   // Load environment variables
-  await dotenv.load(fileName: ".env");
+  await dotenv.load(fileName: '.env');
 
   // Initialize local storage (for token persistence)
   await LocalStorage.init();

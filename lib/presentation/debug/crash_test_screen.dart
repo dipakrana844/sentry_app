@@ -8,11 +8,11 @@ import '../../core/errors/global_error_handler.dart';
 import '../../core/sentry/sentry_config.dart';
 
 /// Centralized crash test screen for debugging.
-/// 
+///
 /// **Why this screen:**
 /// Provides a single place to test all crash scenarios, making it easier
 /// to verify Sentry integration is working correctly.
-/// 
+///
 /// **Real-world problem solved:**
 /// During development and QA, teams need to verify error tracking works.
 /// This screen provides all crash scenarios in one place.
@@ -50,6 +50,7 @@ class CrashTestScreen extends StatelessWidget {
             onPressed: () {
               String? nullString;
               // ignore: null_check_always_fails
+              // ignore: avoid_print
               print(nullString!.length);
             },
           ),
@@ -63,7 +64,8 @@ class CrashTestScreen extends StatelessWidget {
             color: Colors.orange,
             onPressed: () {
               try {
-                throw const FormatException('Unexpected character in JSON at position 42');
+                throw const FormatException(
+                    'Unexpected character in JSON at position 42');
               } catch (e, stack) {
                 SentryConfig.captureException(
                   e,
@@ -74,7 +76,8 @@ class CrashTestScreen extends StatelessWidget {
                   }),
                 );
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('JSON parsing error sent to Sentry')),
+                  const SnackBar(
+                      content: Text('JSON parsing error sent to Sentry')),
                 );
               }
             },
@@ -104,7 +107,8 @@ class CrashTestScreen extends StatelessWidget {
               }
               // Log the freeze simulation
               SentryConfig.captureException(
-                Exception('UI thread freeze simulation - infinite loop detected'),
+                Exception(
+                    'UI thread freeze simulation - infinite loop detected'),
                 hint: Hint.withMap({
                   'error_type': 'ui_freeze',
                   'iteration': i,
@@ -113,7 +117,7 @@ class CrashTestScreen extends StatelessWidget {
 
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: const Text('UI freeze simulation sent to Sentry'),
+                  content: Text('UI freeze simulation sent to Sentry'),
                 ),
               );
             },
@@ -146,9 +150,12 @@ class CrashTestScreen extends StatelessWidget {
                 );
               }
 
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Background isolate crash test initiated')),
-              );
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                      content: Text('Background isolate crash test initiated')),
+                );
+              }
             },
           ),
 
@@ -173,7 +180,8 @@ class CrashTestScreen extends StatelessWidget {
                   }),
                 );
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Permission exception sent to Sentry')),
+                  const SnackBar(
+                      content: Text('Permission exception sent to Sentry')),
                 );
               }
             },
@@ -196,7 +204,8 @@ class CrashTestScreen extends StatelessWidget {
                 }),
               );
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Expired token error sent to Sentry')),
+                const SnackBar(
+                    content: Text('Expired token error sent to Sentry')),
               );
             },
           ),
@@ -210,7 +219,8 @@ class CrashTestScreen extends StatelessWidget {
             color: Colors.teal,
             onPressed: () {
               try {
-                throw TimeoutException('Network request timed out after 30 seconds');
+                throw TimeoutException(
+                    'Network request timed out after 30 seconds');
               } catch (e, stack) {
                 SentryConfig.captureException(
                   e,
@@ -222,7 +232,8 @@ class CrashTestScreen extends StatelessWidget {
                   }),
                 );
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Network timeout error sent to Sentry')),
+                  const SnackBar(
+                      content: Text('Network timeout error sent to Sentry')),
                 );
               }
             },
@@ -237,11 +248,14 @@ class CrashTestScreen extends StatelessWidget {
             color: Colors.deepPurple,
             onPressed: () async {
               await BackgroundService.registerCrashTestTask();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Background crash test task registered. Check Sentry after task runs.'),
-                ),
-              );
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                        'Background crash test task registered. Check Sentry after task runs.'),
+                  ),
+                );
+              }
             },
           ),
 
@@ -253,7 +267,8 @@ class CrashTestScreen extends StatelessWidget {
             icon: Icons.warning,
             color: Colors.red,
             onPressed: () {
-              throw Exception('Intentional crash: Generic exception for testing');
+              throw Exception(
+                  'Intentional crash: Generic exception for testing');
             },
           ),
 
@@ -264,22 +279,22 @@ class CrashTestScreen extends StatelessWidget {
           // Info section
           Card(
             color: Colors.blue[50],
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
+            child: const Padding(
+              padding: EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'About Crash Testing',
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
+                  SizedBox(height: 8),
+                  Text(
                     'All crashes are sent to Sentry with proper context, tags, and breadcrumbs. '
                     'Check your Sentry dashboard to see the errors.',
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
+                  SizedBox(height: 8),
+                  Text(
                     'Note: Some crashes (like UI freeze) are simulated to avoid actually freezing the app.',
                     style: TextStyle(fontStyle: FontStyle.italic),
                   ),
@@ -317,7 +332,7 @@ class CrashTestScreen extends StatelessWidget {
 }
 
 /// Entry point for isolate crash test.
-/// 
+///
 /// This isolate will crash intentionally to test error handling.
 void _isolateCrashEntryPoint(dynamic message) {
   // Set up error handler for this isolate

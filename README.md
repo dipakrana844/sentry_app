@@ -335,6 +335,8 @@ See user journey before errors:
 
 ```
 lib/
+├── bootstrap.dart           # App initialization logic
+├── main.dart                # Entry point
 ├── core/
 │   ├── errors/
 │   │   ├── failure.dart              # Failure types

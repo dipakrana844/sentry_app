@@ -16,22 +16,25 @@ class DashboardController extends AsyncNotifier<List<Task>> {
   }
 
   Future<List<Task>> _fetchTasks(int page) async {
-    final result = await ref
-        .read(dashboardRepositoryProvider)
-        .getTasks(page, _pageSize);
+    final result =
+        await ref.read(dashboardRepositoryProvider).getTasks(page, _pageSize);
     return result.fold<List<Task>>(
       (failure) {
         throw Exception(failure.message);
       },
       (tasks) {
-        if (tasks.isEmpty) _hasMore = false;
+        if (tasks.isEmpty) {
+          _hasMore = false;
+        }
         return tasks;
       },
     );
   }
 
   Future<void> loadMore() async {
-    if (!_hasMore || state.isLoading) return;
+    if (!_hasMore || state.isLoading) {
+      return;
+    }
 
     state = const AsyncLoading<List<Task>>().copyWithPrevious(state);
 
@@ -56,5 +59,5 @@ class DashboardController extends AsyncNotifier<List<Task>> {
 
 final dashboardControllerProvider =
     AsyncNotifierProvider<DashboardController, List<Task>>(
-      DashboardController.new,
-    );
+  DashboardController.new,
+);

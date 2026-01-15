@@ -27,9 +27,15 @@ class MainScreen extends StatelessWidget {
 
   static int _calculateSelectedIndex(BuildContext context) {
     final String location = GoRouterState.of(context).uri.toString();
-    if (location.startsWith('/dashboard')) return 0;
-    if (location.startsWith('/forms')) return 1;
-    if (location.startsWith('/map')) return 2;
+    if (location.startsWith('/dashboard')) {
+      return 0;
+    }
+    if (location.startsWith('/forms')) {
+      return 1;
+    }
+    if (location.startsWith('/map')) {
+      return 2;
+    }
     return 0;
   }
 

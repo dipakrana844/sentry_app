@@ -21,16 +21,16 @@ class SentryConfig {
               if (snapshot.hasError) {
                 // If the app fails to build, don't silently show a black screen.
                 // Surface a minimal error UI instead so it's obvious something failed.
-                return Directionality(
+                return const Directionality(
                   textDirection: TextDirection.ltr,
                   child: ColoredBox(
-                    color: const Color(0xFF000000),
+                    color: Color(0xFF000000),
                     child: Center(
                       child: Text(
                         'Something went wrong while starting the app.\n'
                         'Check logs / Sentry for details.',
                         textAlign: TextAlign.center,
-                        style: const TextStyle(color: Color(0xFFFFFFFF)),
+                        style: TextStyle(color: Color(0xFFFFFFFF)),
                       ),
                     ),
                   ),
@@ -177,15 +177,19 @@ class SentryConfig {
   /// When an error occurs, you can see exactly what data the user was working
   /// with, making debugging much faster.
   static void setExtra(String key, dynamic value) {
+    // ignore: deprecated_member_use
     Sentry.configureScope((scope) {
+      // ignore: deprecated_member_use
       scope.setExtra(key, value);
     });
   }
 
   /// Set multiple extra data fields at once.
   static void setExtras(Map<String, dynamic> extras) {
+    // ignore: deprecated_member_use
     Sentry.configureScope((scope) {
       extras.forEach((key, value) {
+        // ignore: deprecated_member_use
         scope.setExtra(key, value);
       });
     });

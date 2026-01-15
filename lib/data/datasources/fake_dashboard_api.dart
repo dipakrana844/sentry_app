@@ -5,7 +5,9 @@ class FakeDashboardApi {
   Future<List<TaskModel>> getTasks(int page, int pageSize) async {
     // Simulate Network Latency (Slow on purpose sometimes)
     int delay = Random().nextInt(2000) + 500; // 0.5s to 2.5s
-    if (Random().nextDouble() < 0.1) delay = 5000; // 5s slow network
+    if (Random().nextDouble() < 0.1) {
+      delay = 5000;
+    } // 5s slow network
     await Future.delayed(Duration(milliseconds: delay));
 
     // Simulate Network Error
@@ -25,7 +27,7 @@ class FakeDashboardApi {
 
     // Generate Fake Data
     return List.generate(pageSize, (index) {
-      int id = (page - 1) * pageSize + index;
+      final int id = (page - 1) * pageSize + index;
       return TaskModel(
         id: 'task_$id',
         title: 'Field Task #$id',

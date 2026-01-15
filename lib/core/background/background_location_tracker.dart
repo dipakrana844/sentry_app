@@ -39,7 +39,7 @@ class BackgroundLocationTracker {
 
     try {
       // Check permission
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      final bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         throw Exception('Location services are disabled');
       }
@@ -122,7 +122,7 @@ class BackgroundLocationTracker {
         'latitude': position.latitude,
         'longitude': position.longitude,
         'accuracy': position.accuracy,
-        'timestamp': position.timestamp?.toIso8601String(),
+        'timestamp': position.timestamp.toIso8601String(),
       },
     );
 

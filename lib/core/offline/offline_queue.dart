@@ -131,7 +131,7 @@ class OfflineQueue {
       }
 
       final action = OfflineAction(
-        id: '${DateTime.now().millisecondsSinceEpoch}_${type}',
+        id: '${DateTime.now().millisecondsSinceEpoch}_$type',
         type: type,
         data: data,
         createdAt: DateTime.now(),
