@@ -6,6 +6,7 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 
 import 'core/background/background_service.dart';
 import 'core/errors/global_error_handler.dart';
+import 'core/network/dio_client.dart';
 import 'core/offline/offline_queue.dart';
 import 'core/sentry/sentry_config.dart';
 import 'data/datasources/local_storage.dart';
@@ -42,6 +43,9 @@ Future<void> bootstrap(
 
   // Initialize offline queue
   await OfflineQueue.init();
+
+  // Initialize Dio Client with Sentry Interceptor
+  DioClient.init();
 
   // Initialize background services
   await BackgroundService.initialize();

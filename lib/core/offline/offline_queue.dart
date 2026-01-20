@@ -47,12 +47,12 @@ enum QueueStatus {
 }
 
 /// Offline queue service for queuing actions when offline and syncing when online.
-/// 
+///
 /// **Why this is needed:**
 /// - Allows users to perform actions offline
 /// - Automatically syncs when connection is restored
 /// - Tracks sync performance and errors
-/// 
+///
 /// **Real-world problem solved:**
 /// Field workers often work in areas with poor connectivity. This queue ensures
 /// their actions aren't lost and sync automatically when they're back online.
@@ -63,7 +63,7 @@ class OfflineQueue {
   static StreamSubscription<DateTime>? _connectionSubscription;
 
   /// Initialize offline queue and set up auto-sync on connection restore.
-  /// 
+  ///
   /// **Sentry integration:**
   /// - Tracks initialization
   /// - Monitors connection restore events
@@ -71,7 +71,7 @@ class OfflineQueue {
     try {
       // Hive is initialized in LocalStorage.init(); just ensure our box is open.
       if (!Hive.isBoxOpen(_boxName)) {
-        await Hive.openBox(_boxName);
+        await Hive.openBox(_boxName, crashRecovery: true);
       }
 
       // Listen for connection restored events
@@ -103,7 +103,7 @@ class OfflineQueue {
   }
 
   /// Add an action to the offline queue.
-  /// 
+  ///
   /// **Sentry integration:**
   /// - Logs action addition as breadcrumb
   /// - Tracks queue size
@@ -137,7 +137,19 @@ class OfflineQueue {
         createdAt: DateTime.now(),
       );
 
-      await box.add(action.toJson());
+      final span = SentryConfig.startCustomSpan(
+        'offline.add_action',
+        'Add action to queue: $type',
+      );
+
+      try {
+        await box.add(action.toJson());
+        SentryConfig.finishCustomSpan(span, status: const SpanStatus.ok());
+      } catch (e) {
+        SentryConfig.finishCustomSpan(span,
+            status: const SpanStatus.internalError());
+        rethrow;
+      }
 
       // Log to Sentry
       SentryConfig.addBreadcrumb(
@@ -166,7 +178,7 @@ class OfflineQueue {
   }
 
   /// Sync all queued actions.
-  /// 
+  ///
   /// **Sentry integration:**
   /// - Tracks sync as performance transaction
   /// - Logs each action sync as breadcrumb
@@ -231,7 +243,8 @@ class OfflineQueue {
             throw Exception('Max retries exceeded for action ${action.id}');
           }
 
-          final shouldFail = action.retryCount > 0 && action.retryCount % 2 == 0;
+          final shouldFail =
+              action.retryCount > 0 && action.retryCount % 2 == 0;
           if (shouldFail) {
             throw Exception('Simulated sync failure for action ${action.id}');
           }
@@ -243,7 +256,8 @@ class OfflineQueue {
             data: {'action_id': action.id, 'retry_count': action.retryCount},
           );
 
-          SentryConfig.finishCustomSpan(actionSpan, status: const SpanStatus.ok());
+          SentryConfig.finishCustomSpan(actionSpan,
+              status: const SpanStatus.ok());
         } catch (e, stack) {
           // Sync failed for this action
           action.retryCount++;
@@ -318,7 +332,7 @@ class OfflineQueue {
   }
 
   /// Auto-sync when connection is restored.
-  /// 
+  ///
   /// Called automatically by connection monitor.
   static Future<void> _autoSync() async {
     SentryConfig.addBreadcrumb(
@@ -343,7 +357,7 @@ class OfflineQueue {
   }
 
   /// Simulate app kill during sync.
-  /// 
+  ///
   /// This is a debug function to test recovery from interrupted syncs.
   static void simulateAppKillDuringSync() {
     SentryConfig.addBreadcrumb(

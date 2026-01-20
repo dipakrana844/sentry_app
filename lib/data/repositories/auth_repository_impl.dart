@@ -15,8 +15,17 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<Either<Failure, User>> login(String email, String password) async {
+    ISentrySpan? span;
     try {
+      // Start span for login API call
+      span = SentryConfig.startCustomSpan(
+        'auth.login',
+        'Login API Request',
+      );
+
       final userModel = await remoteDataSource.login(email, password);
+
+      SentryConfig.finishCustomSpan(span, status: const SpanStatus.ok());
 
       // Save token and user data to local storage for auto-login
       if (userModel.token != null) {
@@ -67,6 +76,9 @@ class AuthRepositoryImpl implements AuthRepository {
       }
       return Left(NetworkFailure(e.message ?? 'Unknown Error'));
     } catch (e, stackTrace) {
+      SentryConfig.finishCustomSpan(span,
+          status: const SpanStatus.internalError());
+
       // Log unexpected error
       SentryConfig.captureException(
         e,

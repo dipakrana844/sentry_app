@@ -6,21 +6,21 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import '../sentry/sentry_config.dart';
 
 /// Global error handler for Flutter framework errors, async errors, and isolate errors.
-/// 
+///
 /// This handler ensures all errors are captured by Sentry with proper context.
-/// 
+///
 /// **Why this is needed:**
 /// - Flutter framework errors (widget build errors, render errors) are not automatically
 ///   captured by Sentry unless we set up FlutterError.onError
 /// - Async errors (Future errors, Stream errors) need PlatformDispatcher.onError
 /// - Isolate errors (background isolate crashes) need explicit error listeners
-/// 
+///
 /// **Real-world problem solved:**
 /// In production, crashes in async operations or background isolates would go unnoticed
 /// without these handlers. This ensures 100% error coverage.
 class GlobalErrorHandler {
   /// Initialize all global error handlers.
-  /// 
+  ///
   /// Must be called before SentryFlutter.init() in main.dart
   static void initialize() {
     // Handle Flutter framework errors (widget errors, render errors, etc.)
@@ -32,6 +32,9 @@ class GlobalErrorHandler {
         level: SentryLevel.error,
       );
 
+      // Deduplicate: Don't report if same exception reported recently
+      if (_isDuplicate(details.exception)) return;
+
       // Capture to Sentry with full context
       Sentry.captureException(
         details.exception,
@@ -39,7 +42,8 @@ class GlobalErrorHandler {
         hint: Hint.withMap({
           'library': details.library,
           'context': details.context?.toString(),
-          'informationCollector': details.informationCollector?.call().join('\n'),
+          'informationCollector':
+              details.informationCollector?.call().join('\n'),
         }),
       );
 
@@ -78,7 +82,7 @@ class GlobalErrorHandler {
   }
 
   /// Set up error handler for the current isolate.
-  /// 
+  ///
   /// For spawned isolates, call this in the isolate's entry point.
   static void _setupIsolateErrorHandler() {
     try {
@@ -117,9 +121,9 @@ class GlobalErrorHandler {
   }
 
   /// Set up error handler for a spawned isolate.
-  /// 
+  ///
   /// Call this in the entry point of any isolate you spawn.
-  /// 
+  ///
   /// Example:
   /// ```dart
   /// void isolateEntryPoint(SendPort sendPort) {
@@ -129,5 +133,19 @@ class GlobalErrorHandler {
   /// ```
   static void setupIsolateErrorHandler() {
     _setupIsolateErrorHandler();
+  }
+
+  static final Set<String> _reportedErrors = {};
+
+  /// Check if error is a duplicate (simple hash/string check).
+  static bool _isDuplicate(dynamic exception) {
+    final key = exception.toString();
+    if (_reportedErrors.contains(key)) return true;
+
+    _reportedErrors.add(key);
+    // Clear cache after 1 minute to allow re-reporting
+    Future.delayed(
+        const Duration(minutes: 1), () => _reportedErrors.remove(key));
+    return false;
   }
 }
