@@ -104,6 +104,22 @@ class SentryConfig {
       // Breadcrumbs
       options.maxBreadcrumbs = 100;
       options.beforeBreadcrumb = _beforeBreadcrumb;
+      // Enable logs to be sent to Sentry
+      options.enableLogs = true;
+
+      // Debugging (Helps verify logs are sent)
+      if (environment == 'dev') {
+        options.debug = true;
+        options.diagnosticLevel = SentryLevel.info;
+      }
+
+      options.beforeSendLog = (log) {
+        // You can filter logs here. Returning null drops the log.
+        if (options.debug) {
+          debugPrint('Sentry Log: [${log.level.name}] ${log.body}');
+        }
+        return log;
+      };
 
       // Privacy & Scrubbing
       options.sendDefaultPii = false; // Explicitly disable default PII
@@ -212,6 +228,7 @@ class SentryConfig {
   // --- Performance & Tracing ---
 
   static ISentrySpan startAppStartupTransaction() {
+    Sentry.logger.fmt.info('Test log from %s', ['app_startup']);
     return Sentry.startTransaction(
       'app_startup',
       'app.lifecycle',
@@ -220,6 +237,7 @@ class SentryConfig {
   }
 
   static ISentrySpan startScreenTransaction(String screenName) {
+    Sentry.logger.fmt.info('Test log from %s', [screenName]);
     return Sentry.startTransaction(
       screenName,
       'ui.load',

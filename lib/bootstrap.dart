@@ -32,35 +32,30 @@ Future<void> bootstrap(
   // This must be called before SentryFlutter.init() to enable FramesTrackingIntegration
   SentryWidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize global error handlers BEFORE Sentry init
-  GlobalErrorHandler.initialize();
-
-  // Load environment variables
+  // Load environment variables (needed for Sentry DSN)
   await dotenv.load(fileName: '.env');
 
-  // Initialize local storage (for token persistence)
-  await LocalStorage.init();
-
-  // Initialize offline queue
-  await OfflineQueue.init();
-
-  // Initialize Dio Client with Sentry Interceptor
-  DioClient.init();
-
-  // Initialize background services
-  await BackgroundService.initialize();
-
-  // Start app startup performance transaction
-  final startupTransaction = SentryConfig.startAppStartupTransaction();
-
-  // Check for auto-login (stored token and user data)
-  final autoLoginUser = _checkAutoLogin();
-
-  // Finish startup transaction
-  SentryConfig.finishScreenTransaction(startupTransaction);
-
-  // Initialize Sentry and run app
+  // Initialize Sentry FIRST to capture all subsequent logs and errors
   await SentryConfig.init(() async {
+    // 1. Initialize global error handlers
+    GlobalErrorHandler.initialize();
+
+    // 2. Initialize core services
+    await LocalStorage.init();
+    await OfflineQueue.init();
+    DioClient.init();
+    await BackgroundService.initialize();
+
+    // 3. Start app startup performance transaction (Sentry is now ready!)
+    final startupTransaction = SentryConfig.startAppStartupTransaction();
+
+    // 4. Check for auto-login
+    final autoLoginUser = _checkAutoLogin();
+
+    // 5. Finish startup transaction
+    SentryConfig.finishScreenTransaction(startupTransaction);
+
+    // 6. Return the root widget
     return await builder(autoLoginUser);
   });
 }

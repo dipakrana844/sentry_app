@@ -1,7 +1,8 @@
 import 'package:dartz/dartz.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
-import '../../core/sentry/sentry_config.dart';
+
 import '../../core/errors/failure.dart';
+import '../../core/sentry/sentry_config.dart';
 import '../../domain/entities/task.dart' as task;
 import '../../domain/repositories/dashboard_repository.dart';
 import '../datasources/fake_dashboard_api.dart';
